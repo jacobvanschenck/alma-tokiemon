@@ -31,14 +31,16 @@ export default function Page() {
 	const handleList = (nft: Listing) => {
 		if (isConnected) {
 			// Implement actual buy logic here
-			alert(`Listing ${nft.tokenId} for ${formatEther(nft.price ?? 0n)} ETH`);
+			// @ts-ignore
+			alert(`Listing ${nft.tokenId} for ${formatEther(nft.price)} ETH`);
 		}
 	};
 
 	const handleCancel = (nft: Listing) => {
 		if (isConnected) {
 			// Implement actual buy logic here
-			alert(`Canceling ${nft.tokenId} for ${formatEther(nft.price ?? 0n)} ETH`);
+			// @ts-ignore
+			alert(`Canceling ${nft.tokenId} for ${formatEther(nft.price)} ETH`);
 		}
 	};
 

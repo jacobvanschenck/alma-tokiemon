@@ -40,7 +40,7 @@ export default function NFTListing({
 	if (isError || isLoading) return null;
 
 	return (
-		<Card className="w-full max-w-sm bg-gb-light pixel-borders">
+		<Card className="w-72 max-w-sm bg-gb-light pixel-borders">
 			<CardHeader>
 				<CardTitle className="text-gb-darkest">{data.name}</CardTitle>
 				<CardTitle className="text-base text-gb-dark">
@@ -48,7 +48,7 @@ export default function NFTListing({
 				</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<div className="overflow-hidden h-16 bg-gb-lightest pixel-borders-thin">
+				<div className="overflow-hidden h-24 bg-gb-lightest pixel-borders-thin">
 					<img
 						src={data.image}
 						alt={`tokiemon-${data.name}`}

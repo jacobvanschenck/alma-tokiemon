@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import NFTListing from "@/components/NFTListing";
 import { Button } from "@/components/ui/button";
+import useUserListings from "@/hooks/useUserListing";
 
 // Mock data for NFTs
 const mockNFTs = [
@@ -29,6 +30,9 @@ const mockNFTs = [
 export default function Page() {
 	const [isConnected, setIsConnected] = useState(false);
 	const [userListings, setUserListings] = useState<typeof mockNFTs>([]);
+
+	const { data } = useUserListings();
+	console.log({ data });
 
 	useEffect(() => {
 		// Simulating wallet connection status

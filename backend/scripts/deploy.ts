@@ -21,9 +21,11 @@ async function main() {
 	]);
 
 	console.log("\n__________Check Deployment\n");
+	console.log(`Marketplace deployed to: ${marketplace.address}`);
+	console.log(`\tTokiemon: ${await marketplace.read.tokiemon()}`);
+	console.log(`\tDev wallet: ${await marketplace.read.devWallet()}`);
 	console.log(
-		"Marketplace Dev fee %: ",
-		await marketplace.read.devFeePercentage(),
+		`\tDev percentage point: ${await marketplace.read.devFeePercentage()}`,
 	);
 }
 

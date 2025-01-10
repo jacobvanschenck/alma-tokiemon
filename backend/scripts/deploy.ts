@@ -1,6 +1,6 @@
 import hre, { viem } from "hardhat";
 import * as helpers from "@nomicfoundation/hardhat-network-helpers";
-import { Address, getContract } from "viem";
+import { type Address, getContract } from "viem";
 
 const TOKIEMON_ADDRESS =
 	"0x802187c392b15CDC8df8Aa05bFeF314Df1f65C62" as Address;

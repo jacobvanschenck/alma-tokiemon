@@ -8,6 +8,7 @@ contract TokiemonMarketplace is ReentrancyGuard {
     struct Listing {
         address seller;
         uint256 price;
+        uint256 tokenId;
     }
 
     IERC721 public immutable tokiemon;
@@ -44,7 +45,7 @@ contract TokiemonMarketplace is ReentrancyGuard {
         require(tokiemon.ownerOf(tokenId) == msg.sender, OnlyTokiemonOwner(tokenId, msg.sender));
         require(tokiemon.isApprovedForAll(msg.sender, address(this)), MarketplaceNotApproved());
 
-        listingById[tokenId] = Listing({seller: msg.sender, price: price});
+        listingById[tokenId] = Listing({seller: msg.sender, price: price, tokenId: tokenId});
         _addListedToken(tokenId);
         emit Listed(msg.sender, tokenId, price);
 
@@ -85,6 +86,18 @@ contract TokiemonMarketplace is ReentrancyGuard {
 
     function getListing(uint256 tokenId) external view returns (Listing memory) {
         return listingById[tokenId];
+    }
+
+    function getAllListings() external view returns (Listing[] memory) {
+        uint256 totalListings = listedTokenIds.length;
+        Listing[] memory listings = new Listing[](totalListings);
+
+        for (uint256 i = 0; i < totalListings; i++) {
+          uint256 tokenId = listedTokenIds[i];
+          listings[i] = listingById[tokenId];
+        }
+
+        return listings;
     }
 
     function _addListedToken(uint256 tokenId) internal {

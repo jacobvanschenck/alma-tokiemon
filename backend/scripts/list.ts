@@ -6,7 +6,7 @@ import { waitForTransactionReceipt } from "viem/_types/actions/public/waitForTra
 import { privateKeyToAccount } from "viem/accounts";
 
 const MARKETPLACE_ADDRESS =
-	"0xb9260f5a953445c1ebd157b579fcb949f711f625" as Address;
+	"0x03fc1d23bdcf9451e70ce8aec80b214995cb0404" as Address;
 
 const TOKIEMON_ADDRESS =
 	"0x802187c392b15CDC8df8Aa05bFeF314Df1f65C62" as Address;

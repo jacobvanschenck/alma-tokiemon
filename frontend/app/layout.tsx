@@ -27,7 +27,7 @@ export default function RootLayout({
 			>
 				<ChainProvider>
 					<Navbar />
-					<main className="container py-8 px-4 mx-auto">{children}</main>
+					<main className="container py-8 px-4 pt-24 mx-auto">{children}</main>
 				</ChainProvider>
 			</body>
 		</html>

@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -5,46 +6,65 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { tokiemonAbi } from "@/lib/abis";
+import { TOKIEMON_ADDRESS } from "@/lib/constants";
+import { useQuery } from "@tanstack/react-query";
+import { formatEther } from "viem";
+import { useReadContract } from "wagmi";
 
 interface NFTListingProps {
-	id: string;
-	name: string;
-	image: string;
-	price: string;
-	onBuy: () => void;
+	id: bigint;
+	price: bigint;
+	seller: string;
+	cta: string;
+	action: () => void;
 }
 
 export default function NFTListing({
 	id,
-	name,
-	image,
 	price,
-	onBuy,
+	seller,
+	cta,
+	action,
 }: NFTListingProps) {
+	const { data, isLoading, isError } = useQuery({
+		queryKey: ["tokiemon", Number(id)],
+		queryFn: async () => {
+			const response = await fetch(
+				`https://api.tokiemon.io/tokiemon/${Number(id)}`,
+			);
+			return await response.json();
+		},
+	});
+
+	if (isError || isLoading) return null;
+
 	return (
 		<Card className="w-full max-w-sm bg-gb-light pixel-borders">
 			<CardHeader>
-				<CardTitle className="text-gb-darkest">{name}</CardTitle>
+				<CardTitle className="text-gb-darkest">{data.name}</CardTitle>
+				<CardTitle className="text-base text-gb-dark">
+					Seller: {seller.slice(0, 8)}
+				</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<div className="overflow-hidden w-full h-48 bg-gb-lightest pixel-borders-thin">
+				<div className="overflow-hidden h-16 bg-gb-lightest pixel-borders-thin">
 					<img
-						src={image}
-						alt={name}
+						src={data.image}
+						alt={`tokiemon-${data.name}`}
 						className="object-contain w-full h-full"
 					/>
 				</div>
 				<p className="mt-2 text-lg font-semibold text-gb-darkest">
-					Price: {price} ETH
+					Price: {formatEther(price)} ETH
 				</p>
 			</CardContent>
 			<CardFooter>
 				<Button
-					onClick={onBuy}
+					onClick={action}
 					className="w-full bg-gb-dark text-gb-lightest pixel-borders-thin hover:bg-gb-darkest"
 				>
-					Buy Now
+					{cta}
 				</Button>
 			</CardFooter>
 		</Card>

@@ -1952,6 +1952,36 @@ export const marketplaceAbi = [
 		type: "function",
 	},
 	{
+		inputs: [],
+		name: "getAllListings",
+		outputs: [
+			{
+				components: [
+					{
+						internalType: "address",
+						name: "seller",
+						type: "address",
+					},
+					{
+						internalType: "uint256",
+						name: "price",
+						type: "uint256",
+					},
+					{
+						internalType: "uint256",
+						name: "tokenId",
+						type: "uint256",
+					},
+				],
+				internalType: "struct TokiemonMarketplace.Listing[]",
+				name: "",
+				type: "tuple[]",
+			},
+		],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
 		inputs: [
 			{
 				internalType: "uint256",
@@ -1971,6 +2001,11 @@ export const marketplaceAbi = [
 					{
 						internalType: "uint256",
 						name: "price",
+						type: "uint256",
+					},
+					{
+						internalType: "uint256",
+						name: "tokenId",
 						type: "uint256",
 					},
 				],
@@ -2008,7 +2043,7 @@ export const marketplaceAbi = [
 				type: "uint256",
 			},
 		],
-		name: "listings",
+		name: "listingById",
 		outputs: [
 			{
 				internalType: "address",
@@ -2018,6 +2053,11 @@ export const marketplaceAbi = [
 			{
 				internalType: "uint256",
 				name: "price",
+				type: "uint256",
+			},
+			{
+				internalType: "uint256",
+				name: "tokenId",
 				type: "uint256",
 			},
 		],

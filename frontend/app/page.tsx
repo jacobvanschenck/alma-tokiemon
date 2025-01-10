@@ -1,81 +1,70 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import NFTListing from "@/components/NFTListing";
 import { Button } from "@/components/ui/button";
-import useUserListings from "@/hooks/useUserListing";
+import useAllListings from "@/hooks/useAllListings";
+import useUserTokiemon from "@/hooks/useUserTokiemon";
+import { type Address, formatEther } from "viem";
+import { useAccount, useConnect } from "wagmi";
 
-// Mock data for NFTs
-const mockNFTs = [
-	{
-		id: "1",
-		name: "Tokiemon #1",
-		image: "/placeholder.svg?height=200&width=200",
-		price: "0.1",
-	},
-	{
-		id: "2",
-		name: "Tokiemon #2",
-		image: "/placeholder.svg?height=200&width=200",
-		price: "0.2",
-	},
-	{
-		id: "3",
-		name: "Tokiemon #3",
-		image: "/placeholder.svg?height=200&width=200",
-		price: "0.15",
-	},
-];
+export type Listing = {
+	seller?: Address;
+	price?: bigint;
+	tokenId: bigint;
+};
 
 export default function Page() {
-	const [isConnected, setIsConnected] = useState(false);
-	const [userListings, setUserListings] = useState<typeof mockNFTs>([]);
+	const { isConnected } = useAccount();
 
-	const { data } = useUserListings();
-	console.log({ data });
+	const { data: allListings } = useAllListings();
+	const { data: userListings } = useUserTokiemon();
 
-	useEffect(() => {
-		// Simulating wallet connection status
-		const checkWalletConnection = () => {
-			// Replace this with actual wallet connection check
-			setIsConnected(localStorage.getItem("walletConnected") === "true");
-		};
-
-		checkWalletConnection();
-		window.addEventListener("walletConnected", checkWalletConnection);
-
-		return () => {
-			window.removeEventListener("walletConnected", checkWalletConnection);
-		};
-	}, []);
-
-	useEffect(() => {
-		if (isConnected) {
-			// Fetch user's listings when connected
-			// This is a mock implementation
-			setUserListings(mockNFTs.slice(0, 2));
-		}
-	}, [isConnected]);
-
-	const handleBuy = (nft: (typeof mockNFTs)[0]) => {
+	const handleBuy = (nft: Listing) => {
 		if (isConnected) {
 			// Implement actual buy logic here
-			alert(`Buying ${nft.name} for ${nft.price} ETH`);
+			alert(`Buying ${nft.tokenId} for ${nft.price} ETH`);
 		} else {
-			alert("Please connect your wallet to buy NFTs");
+			alert("Please connect your wallet to buy this Tokiemon");
+		}
+	};
+
+	const handleList = (nft: Listing) => {
+		if (isConnected) {
+			// Implement actual buy logic here
+			alert(`Listing ${nft.tokenId} for ${formatEther(nft.price ?? 0n)} ETH`);
+		}
+	};
+
+	const handleCancel = (nft: Listing) => {
+		if (isConnected) {
+			// Implement actual buy logic here
+			alert(`Canceling ${nft.tokenId} for ${formatEther(nft.price ?? 0n)} ETH`);
 		}
 	};
 
 	return (
 		<div className="space-y-8">
-			{isConnected && userListings.length > 0 && (
+			{isConnected && userListings && userListings.length > 0 && (
 				<section className="p-4 bg-gb-dark pixel-borders">
 					<h2 className="mb-4 text-2xl font-bold text-gb-lightest">
 						Your Listed Tokiemon NFTs
 					</h2>
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-						{userListings.map((nft) => (
-							<NFTListing key={nft.id} {...nft} onBuy={() => handleBuy(nft)} />
+						{allListings?.map((nft, index) => (
+							<NFTListing
+								key={nft.tokenId}
+								id={nft.tokenId}
+								price={nft.price}
+								seller={nft.seller}
+								cta={nft.price ? "Cancel Listing" : "List"}
+								action={() => {
+									if (nft.price) {
+										handleCancel(nft);
+									} else {
+										handleList(nft);
+									}
+								}}
+							/>
 						))}
 					</div>
 				</section>
@@ -86,8 +75,15 @@ export default function Page() {
 					All Listed Tokiemon NFTs
 				</h2>
 				<div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-					{mockNFTs.map((nft) => (
-						<NFTListing key={nft.id} {...nft} onBuy={() => handleBuy(nft)} />
+					{allListings?.map((nft) => (
+						<NFTListing
+							key={nft.tokenId}
+							id={nft.tokenId}
+							price={nft.price}
+							seller={nft.seller}
+							cta={"Buy Now"}
+							action={() => handleBuy(nft)}
+						/>
 					))}
 				</div>
 			</section>

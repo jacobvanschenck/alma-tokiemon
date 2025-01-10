@@ -219,4 +219,30 @@ describe("TokiemonMarketplace", () => {
 			).to.be.rejectedWith("IncorrectValueSent");
 		});
 	});
+	describe("Get Listings", () => {
+		it("Should retrive the correct listing", async () => {
+			const { marketplace, seller, buyer, tokiemon } =
+				await loadFixture(deployMarketplace);
+
+			await marketplace.write.listToken([0n, parseEther("10")], {
+				account: seller.account,
+			});
+
+			let listing = await marketplace.read.getListing([0n]);
+
+			expect(listing.seller).to.equal(getAddress(seller.account.address));
+
+			await tokiemon.write.setApprovalForAll([marketplace.address, true], {
+				account: buyer.account,
+			});
+
+			await marketplace.write.listToken([1n, parseEther("10")], {
+				account: buyer.account,
+			});
+
+			listing = await marketplace.read.getListing([1n]);
+
+			expect(listing.seller).to.equal(getAddress(buyer.account.address));
+		});
+	});
 });

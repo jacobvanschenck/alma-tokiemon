@@ -28,11 +28,6 @@ async function main() {
 		MARKETPLACE_ADDRESS,
 	);
 
-	const tokiemon = await hre.viem.getContractAt(
-		"TokiemonMock",
-		TOKIEMON_ADDRESS,
-	);
-
 	console.log("\n__________Check Deployment\n");
 	console.log(`Marketplace deployed to: ${marketplace.address}`);
 	console.log(`\tTokiemon: ${await marketplace.read.tokiemon()}`);
@@ -42,15 +37,7 @@ async function main() {
 	);
 
 	console.log("\n__________List Tokiemon\n");
-	let hash = await tokiemon.write.setApprovalForAll(
-		[marketplace.address, true],
-		{
-			account: user,
-		},
-	);
-	await pubClient.waitForTransactionReceipt({ hash });
-
-	hash = await marketplace.write.listToken([45221n, parseEther("0.0000001")], {
+	const hash = await marketplace.write.cancelListing([45221n], {
 		account: user,
 	});
 	await pubClient.waitForTransactionReceipt({ hash });

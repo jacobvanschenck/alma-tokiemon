@@ -14,7 +14,9 @@ contract TokiemonMarketplace is ReentrancyGuard {
     address public devWallet;
     uint256 public devFeePercentage; // e.g., 5% = 500 (basis points)
 
-    mapping(uint256 => Listing) public listings;
+    mapping(uint256 => Listing) public listingById;
+    uint256[] private listedTokenIds; // Array of listed token IDs
+    mapping(uint256 => uint256) private tokenIdIndex; // Maps token ID to its index in the listedTokenIds array
 
     /// EVENTS
     event Listed(address seller, uint256 tokenId, uint256 price);
@@ -42,21 +44,25 @@ contract TokiemonMarketplace is ReentrancyGuard {
         require(tokiemon.ownerOf(tokenId) == msg.sender, OnlyTokiemonOwner(tokenId, msg.sender));
         require(tokiemon.isApprovedForAll(msg.sender, address(this)), MarketplaceNotApproved());
 
-        listings[tokenId] = Listing({seller: msg.sender, price: price});
+        listingById[tokenId] = Listing({seller: msg.sender, price: price});
+        _addListedToken(tokenId);
         emit Listed(msg.sender, tokenId, price);
+
     }
 
     function cancelListing(uint256 tokenId) external {
-        Listing memory listing = listings[tokenId];
+        Listing memory listing = listingById[tokenId];
         require(listing.seller != address(0), TokiemonNotListed(tokenId));
         require(listing.seller == msg.sender, OnlyTokiemonOwner(tokenId, msg.sender));
 
-        delete listings[tokenId];
+        delete listingById[tokenId];
+        _removeListedToken(tokenId); 
         emit Cancelled(msg.sender, tokenId);
+
     }
 
     function buyToken(uint256 tokenId) external payable nonReentrant {
-        Listing memory listing = listings[tokenId];
+        Listing memory listing = listingById[tokenId];
         require(listing.seller != address(0), TokiemonNotListed(tokenId));
         require(msg.value == listing.price, IncorrectValueSent(listing.price, msg.value));
 
@@ -72,11 +78,34 @@ contract TokiemonMarketplace is ReentrancyGuard {
         tokiemon.safeTransferFrom(listing.seller, msg.sender, tokenId);
 
         // Remove listing
-        delete listings[tokenId];
+        delete listingById[tokenId];
+        _removeListedToken(tokenId); 
         emit Sold(msg.sender, tokenId, listing.price);
     }
 
     function getListing(uint256 tokenId) external view returns (Listing memory) {
-        return listings[tokenId];
+        return listingById[tokenId];
+    }
+
+    function _addListedToken(uint256 tokenId) internal {
+        if (tokenIdIndex[tokenId] == 0 && (listedTokenIds.length == 0 || listedTokenIds[0] != tokenId)) {
+            listedTokenIds.push(tokenId);
+            tokenIdIndex[tokenId] = listedTokenIds.length; // Store 1-based index
+        }
+    }
+
+    function _removeListedToken(uint256 tokenId) internal {
+        uint256 index = tokenIdIndex[tokenId];
+        require(index > 0, "Token not listed"); // Ensure the token is listed
+
+        uint256 lastIndex = listedTokenIds.length;
+        if (index != lastIndex) {
+            uint256 lastTokenId = listedTokenIds[lastIndex - 1];
+            listedTokenIds[index - 1] = lastTokenId; // Move last token to the removed slot
+            tokenIdIndex[lastTokenId] = index; // Update index for the moved token
+        }
+
+        listedTokenIds.pop(); // Remove the last token
+        delete tokenIdIndex[tokenId]; // Delete the index mapping for the removed token
     }
 }

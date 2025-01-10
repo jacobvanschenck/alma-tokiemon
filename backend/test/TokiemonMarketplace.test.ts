@@ -51,7 +51,7 @@ describe("TokiemonMarketplace", () => {
 				account: seller.account,
 			});
 
-			const listing = await marketplace.read.listings([0n]);
+			const listing = await marketplace.read.listingById([0n]);
 
 			expect(listing[0]).to.equal(getAddress(seller.account.address));
 			expect(listing[1]).to.equal(parseEther("1"));
@@ -100,7 +100,7 @@ describe("TokiemonMarketplace", () => {
 				account: seller.account,
 			});
 
-			const listing = await marketplace.read.listings([0n]);
+			const listing = await marketplace.read.listingById([0n]);
 
 			expect(listing[0]).to.equal(zeroAddress);
 			expect(listing[1]).to.equal(0n);
@@ -150,7 +150,7 @@ describe("TokiemonMarketplace", () => {
 				value: parseEther("1"),
 			});
 
-			const listing = await marketplace.read.listings([0n]);
+			const listing = await marketplace.read.listingById([0n]);
 
 			expect(listing[0]).to.equal(zeroAddress);
 			expect(listing[1]).to.equal(0n);

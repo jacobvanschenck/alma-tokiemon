@@ -1,3 +1,6 @@
+"use client";
+
+import type { Listing } from "@/app/page";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -6,65 +9,111 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import useBuyTokiemon from "@/hooks/useBuyTokiemon";
+import useCancelListing from "@/hooks/useCancelListing";
+import useListTokiemon from "@/hooks/useListTokiemon";
 import { tokiemonAbi } from "@/lib/abis";
 import { TOKIEMON_ADDRESS } from "@/lib/constants";
 import { useQuery } from "@tanstack/react-query";
-import { formatEther } from "viem";
+import { useState } from "react";
+import { formatEther, parseEther } from "viem";
 import { useReadContract } from "wagmi";
+import { Input } from "./ui/input";
 
-interface NFTListingProps {
-	id: bigint;
-	price: bigint;
-	seller: string;
-	cta: string;
-	action: () => void;
-}
-
-export default function NFTListing({
-	id,
-	price,
-	seller,
-	cta,
-	action,
-}: NFTListingProps) {
+export default function NFTListing(props: {
+	nft: Listing;
+	isOwner: boolean;
+	isListed: boolean;
+}) {
+	const [listPrice, setListPrice] = useState<string>("");
 	const { data, isLoading, isError } = useQuery({
-		queryKey: ["tokiemon", Number(id)],
+		queryKey: ["tokiemon", Number(props.nft.tokenId)],
 		queryFn: async () => {
 			const response = await fetch(
-				`https://api.tokiemon.io/tokiemon/${Number(id)}`,
+				`https://api.tokiemon.io/tokiemon/${Number(props.nft.tokenId)}`,
 			);
 			return await response.json();
 		},
 	});
 
+	const { cancelListing } = useCancelListing();
+	const { listTokiemon } = useListTokiemon();
+	const { buyTokiemon } = useBuyTokiemon();
+
+	const action = !props.isOwner
+		? buyTokiemon
+		: props.isListed
+			? cancelListing
+			: listTokiemon;
+
+	const getCaption = () => {
+		if (!props.isOwner) return "Buy";
+		if (props.isListed) return "Cancel Listing";
+		return "List";
+	};
+
 	if (isError || isLoading) return null;
 
 	return (
-		<Card className="w-72 max-w-sm bg-gb-light pixel-borders">
+		<Card className="w-72 bg-gb-light pixel-borders group">
 			<CardHeader>
 				<CardTitle className="text-gb-darkest">{data.name}</CardTitle>
-				<CardTitle className="text-base text-gb-dark">
-					Seller: {seller.slice(0, 8)}
-				</CardTitle>
+				{props.nft.seller && (
+					<CardTitle className="text-base text-gb-dark">
+						Owner: {props.nft.seller.slice(0, 8)}
+					</CardTitle>
+				)}
 			</CardHeader>
 			<CardContent>
-				<div className="overflow-hidden h-24 bg-gb-lightest pixel-borders-thin">
-					<img
-						src={data.image}
-						alt={`tokiemon-${data.name}`}
-						className="object-contain w-full h-full"
-					/>
+				<div className="flex relative ease-in-out">
+					<div className="overflow-hidden w-full h-40 bg-gb-lightest pixel-borders-thin">
+						<img
+							src={data.image}
+							alt={`tokiemon-${data.name}`}
+							className="object-contain w-full h-full transition-opacity duration-150 group-hover:opacity-0"
+						/>
+					</div>
+					<div className="absolute pt-2 pl-3 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+						{/* @ts-ignore */}
+						{data.attributes.map((a) => (
+							<p className="text-gb-darkest" key={a.trait_type}>
+								<span className="font-semibold">{a.trait_type}: </span>
+								{a.value}
+							</p>
+						))}
+					</div>
 				</div>
-				<p className="mt-2 text-lg font-semibold text-gb-darkest">
-					Price: {formatEther(price)} ETH
-				</p>
+				{props.nft.price && (
+					<p className="mt-2 text-lg font-semibold text-gb-darkest">
+						Price: {formatEther(props.nft.price)} ETH
+					</p>
+				)}
 			</CardContent>
-			<CardFooter>
+			<CardFooter className="gap-2">
+				{props.isOwner && !props.isListed && (
+					<Input
+						value={listPrice}
+						onChange={(e) => setListPrice(e.target.value)}
+					/>
+				)}
 				<Button
-					onClick={action}
+					disabled={props.isOwner && !props.isListed && !listPrice}
+					onClick={(e) => {
+						e.preventDefault();
+						if (!props.isOwner)
+							//@ts-ignore
+							buyTokiemon({ id: props.nft.tokenId, price: props.nft.price });
+						if (props.isListed) cancelListing({ id: props.nft.tokenId });
+						//@ts-ignore
+						listPrice &&
+							listTokiemon({
+								id: props.nft.tokenId,
+								price: parseEther(listPrice),
+							});
+					}}
 					className="w-full bg-gb-dark text-gb-lightest pixel-borders-thin hover:bg-gb-darkest"
 				>
-					{cta}
+					{getCaption()}
 				</Button>
 			</CardFooter>
 		</Card>

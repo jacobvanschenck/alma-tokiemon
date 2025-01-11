@@ -7,7 +7,7 @@ export default function Navbar() {
 	return (
 		<nav className="fixed p-4 w-full bg-gb-dark text-gb-lightest pixel-borders">
 			<div className="container flex justify-between items-center mx-auto">
-				<h1 className="text-xl font-bold">Tokiemon</h1>
+				<h1 className="text-xl font-bold">Tokiemon Marketplace</h1>
 				<Connect />
 			</div>
 		</nav>

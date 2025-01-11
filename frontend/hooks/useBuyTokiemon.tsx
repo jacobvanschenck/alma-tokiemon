@@ -1,0 +1,22 @@
+import { marketplaceAbi } from "@/lib/abis";
+import { MARKETPLACE_ADDRESS } from "@/lib/constants";
+import { useCallback } from "react";
+import { useWriteContract } from "wagmi";
+
+export default function useBuyTokiemon() {
+	const { writeContract, isError, isPending } = useWriteContract();
+
+	const buyTokiemon = useCallback(
+		(props: { id: bigint; price: bigint }) =>
+			writeContract({
+				abi: marketplaceAbi,
+				address: MARKETPLACE_ADDRESS,
+				functionName: "buyToken",
+				args: [props.id],
+				value: props.price,
+			}),
+		[writeContract],
+	);
+
+	return { buyTokiemon, isPending, isError };
+}

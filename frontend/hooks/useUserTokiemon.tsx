@@ -1,9 +1,9 @@
-import { Listing } from "@/app/page";
+import type { Listing } from "@/app/page";
 import { marketplaceAbi, tokiemonAbi } from "@/lib/abis";
 import { client } from "@/lib/client";
 import { MARKETPLACE_ADDRESS, TOKIEMON_ADDRESS } from "@/lib/constants";
 import { useQuery } from "@tanstack/react-query";
-import { type Address, getAddress } from "viem";
+import { type Address, getAddress, zeroAddress } from "viem";
 import { getL1ChainId } from "viem/zksync";
 import { useAccount } from "wagmi";
 
@@ -13,8 +13,8 @@ export default function useUserTokiemon() {
 	const { data, isLoading, isError } = useQuery({
 		queryKey: ["get-token-ids", address],
 		queryFn: async () => {
-			if (!address) return;
-			return await getTokensIds(address);
+			if (!address) return [];
+			return (await getTokensIds(address)) ?? [];
 		},
 	});
 
@@ -33,9 +33,9 @@ async function getTokensIds(address: Address) {
 		args: [address as Address],
 	});
 
-	const results = new Array<bigint | null>(balance);
+	const results = [] as Array<bigint | null>;
 
-	for (let i = 0; i < balance; i++) {
+	for (let i = 0; i < Number(balance); i++) {
 		const id = await getTokenIdByIndex(address, BigInt(i));
 		results.push(id);
 	}
@@ -44,14 +44,14 @@ async function getTokensIds(address: Address) {
 
 	for (const tokenId of results) {
 		if (!tokenId) return;
-		const listing = await getListing(tokenId);
+		const listing = await getListing(address, tokenId);
 		listings.push(listing);
 	}
 
 	return listings;
 }
 
-async function getListing(tokenId: bigint) {
+async function getListing(address: Address, tokenId: bigint) {
 	try {
 		const listing = await client.readContract({
 			abi: marketplaceAbi,
@@ -60,9 +60,14 @@ async function getListing(tokenId: bigint) {
 			args: [tokenId],
 		});
 
-		if (!listing)
-			return { tokenId, seller: undefined, price: undefined } as Listing;
-		return listing as Listing;
+		if (listing.seller === zeroAddress)
+			return {
+				tokenId,
+				seller: address,
+				price: undefined,
+				isListed: false,
+			} as Listing;
+		return { ...listing, isListed: true } as Listing;
 	} catch (err) {
 		console.error(err);
 		return null;

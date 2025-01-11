@@ -24,6 +24,7 @@ export default function NFTListing(props: {
 	nft: Listing;
 	isOwner: boolean;
 	isListed: boolean;
+	isConnected: boolean;
 }) {
 	const [listPrice, setListPrice] = useState<string>("");
 	const { data, isLoading, isError } = useQuery({
@@ -100,6 +101,8 @@ export default function NFTListing(props: {
 					disabled={props.isOwner && !props.isListed && !listPrice}
 					onClick={(e) => {
 						e.preventDefault();
+						if (!props.isConnected)
+							return alert("Connect your wallet to get started");
 						if (!props.isOwner)
 							return buyTokiemon({
 								id: props.nft.tokenId,

@@ -36,9 +36,9 @@ export default function NFTListing(props: {
 		},
 	});
 
-	const { cancelListing } = useCancelListing();
-	const { listTokiemon } = useListTokiemon();
-	const { buyTokiemon } = useBuyTokiemon();
+	const { cancelListing, isPending: cancelPending } = useCancelListing();
+	const { listTokiemon, isPending: listPending } = useListTokiemon();
+	const { buyTokiemon, isPending: buyPending } = useBuyTokiemon();
 
 	const action = !props.isOwner
 		? buyTokiemon
@@ -101,19 +101,26 @@ export default function NFTListing(props: {
 					onClick={(e) => {
 						e.preventDefault();
 						if (!props.isOwner)
-							//@ts-ignore
-							buyTokiemon({ id: props.nft.tokenId, price: props.nft.price });
-						if (props.isListed) cancelListing({ id: props.nft.tokenId });
+							return buyTokiemon({
+								id: props.nft.tokenId,
+								//@ts-ignore
+								price: props.nft.price,
+							});
+						if (props.isListed) return cancelListing({ id: props.nft.tokenId });
 						//@ts-ignore
-						listPrice &&
+						return (
+							listPrice &&
 							listTokiemon({
 								id: props.nft.tokenId,
 								price: parseEther(listPrice),
-							});
+							})
+						);
 					}}
 					className="w-full bg-gb-dark text-gb-lightest pixel-borders-thin hover:bg-gb-darkest"
 				>
-					{getCaption()}
+					{cancelPending || listPending || buyPending
+						? "Working..."
+						: getCaption()}
 				</Button>
 			</CardFooter>
 		</Card>

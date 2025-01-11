@@ -6,13 +6,15 @@ import { useAccount, useReadContract } from "wagmi";
 export default function useAllListings() {
 	const { address } = useAccount();
 
-	const { data } = useReadContract({
+	const { data, queryKey } = useReadContract({
 		abi: marketplaceAbi,
 		address: MARKETPLACE_ADDRESS,
 		functionName: "getAllListings",
 	});
 
-	if (!address) return null;
+	console.log({ queryKey });
+
+	if (!address) return { data: null };
 
 	return {
 		data: data

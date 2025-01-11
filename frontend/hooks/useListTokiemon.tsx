@@ -1,11 +1,24 @@
 import { marketplaceAbi, tokiemonAbi } from "@/lib/abis";
+import { config } from "@/lib/config";
 import { MARKETPLACE_ADDRESS, TOKIEMON_ADDRESS } from "@/lib/constants";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import type { Address } from "viem";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
+import { waitForTransactionReceipt } from "wagmi/actions";
 
 export default function useListTokiemon() {
-	const { writeContract, isError, isPending, error } = useWriteContract();
+	const queryClient = useQueryClient();
+	const { writeContract, isError, isPending, error } = useWriteContract({
+		mutation: {
+			onSettled: async (data) => {
+				await waitForTransactionReceipt(config, {
+					hash: data as Address,
+				});
+				queryClient.refetchQueries();
+			},
+		},
+	});
 	const { address } = useAccount();
 
 	const { data: isApproved } = useReadContract({

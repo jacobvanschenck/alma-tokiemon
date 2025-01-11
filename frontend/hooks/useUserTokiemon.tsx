@@ -11,7 +11,7 @@ export default function useUserTokiemon() {
 	const { address } = useAccount();
 
 	const { data, isLoading, isError } = useQuery({
-		queryKey: ["get-token-ids", address],
+		queryKey: ["get-user-token-ids", address],
 		queryFn: async () => {
 			if (!address) return [];
 			return (await getTokensIds(address)) ?? [];

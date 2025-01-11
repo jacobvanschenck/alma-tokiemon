@@ -1,13 +1,32 @@
-import { marketplaceAbi } from "@/lib/abis";
-import { MARKETPLACE_ADDRESS } from "@/lib/constants";
+import { marketplaceAbi, tokiemonAbi } from "@/lib/abis";
+import { MARKETPLACE_ADDRESS, TOKIEMON_ADDRESS } from "@/lib/constants";
 import { useCallback } from "react";
-import { useWriteContract } from "wagmi";
+import type { Address } from "viem";
+import { useAccount, useReadContract, useWriteContract } from "wagmi";
 
 export default function useListTokiemon() {
 	const { writeContract, isError, isPending, error } = useWriteContract();
+	const { address } = useAccount();
+
+	const { data: isApproved } = useReadContract({
+		abi: tokiemonAbi,
+		address: TOKIEMON_ADDRESS,
+		functionName: "isApprovedForAll",
+		args: [address as Address, MARKETPLACE_ADDRESS],
+	});
+
+	const approveMarketplace = useCallback(() => {
+		writeContract({
+			abi: tokiemonAbi,
+			address: TOKIEMON_ADDRESS,
+			functionName: "setApprovalForAll",
+			args: [MARKETPLACE_ADDRESS, true],
+		});
+	}, [writeContract]);
 
 	const listTokiemon = useCallback(
 		(props: { id: bigint; price: bigint }) => {
+			if (!isApproved) approveMarketplace();
 			writeContract({
 				abi: marketplaceAbi,
 				address: MARKETPLACE_ADDRESS,
@@ -15,7 +34,7 @@ export default function useListTokiemon() {
 				args: [props.id, props.price],
 			});
 		},
-		[writeContract],
+		[writeContract, approveMarketplace, isApproved],
 	);
 
 	return { listTokiemon, isPending, isError };

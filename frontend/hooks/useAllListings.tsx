@@ -12,9 +12,11 @@ export default function useAllListings() {
 		functionName: "getAllListings",
 	});
 
+	if (!address) return null;
+
 	return {
 		data: data
-			?.filter((d) => d.tokenId && d.seller !== getAddress(address as Address))
+			?.filter((d) => d.tokenId && d.seller !== getAddress(address))
 			.map((d) => ({ ...d, isListed: true })),
 	};
 }

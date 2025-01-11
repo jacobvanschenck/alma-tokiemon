@@ -4,7 +4,6 @@ const nextConfig = {
 		config.externals.push("pino-pretty", "lokijs", "encoding");
 		return config;
 	},
-	ignoreBuildErrors: true,
 };
 
 export default nextConfig;

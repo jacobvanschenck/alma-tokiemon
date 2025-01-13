@@ -28,7 +28,7 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0(wvxjgptyjpnubtfnnhwsdj4wgq)
       '@nomicfoundation/hardhat-verify':
-        specifier: ^2.0.0
+        specifier: ^2.0.12
         version: 2.0.12(hardhat@2.22.17(ts-node@10.9.2(@types/node@22.10.5)(typescript@5.0.4))(typescript@5.0.4))
       '@nomicfoundation/hardhat-viem':
         specifier: ^2.0.0

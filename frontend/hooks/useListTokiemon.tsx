@@ -5,11 +5,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import type { Address } from "viem";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
-import { waitForTransactionReceipt } from "wagmi/actions";
+import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 
 export default function useListTokiemon() {
 	const queryClient = useQueryClient();
-	const { writeContract, isError, isPending, error } = useWriteContract({
+	const {
+		writeContract: listTokiemonWrite,
+		isError,
+		isPending,
+		error,
+	} = useWriteContract({
 		mutation: {
 			onSettled: async (data) => {
 				await waitForTransactionReceipt(config, {
@@ -28,26 +33,28 @@ export default function useListTokiemon() {
 		args: [address as Address, MARKETPLACE_ADDRESS],
 	});
 
-	const approveMarketplace = useCallback(() => {
-		writeContract({
+	const approveMarketplace = useCallback(async () => {
+		const hash = await writeContract(config, {
 			abi: tokiemonAbi,
 			address: TOKIEMON_ADDRESS,
 			functionName: "setApprovalForAll",
 			args: [MARKETPLACE_ADDRESS, true],
 		});
-	}, [writeContract]);
+
+		await waitForTransactionReceipt(config, { hash });
+	}, []);
 
 	const listTokiemon = useCallback(
-		(props: { id: bigint; price: bigint }) => {
-			if (!isApproved) approveMarketplace();
-			writeContract({
+		async (props: { id: bigint; price: bigint }) => {
+			if (!isApproved) await approveMarketplace();
+			listTokiemonWrite({
 				abi: marketplaceAbi,
 				address: MARKETPLACE_ADDRESS,
 				functionName: "listToken",
 				args: [props.id, props.price],
 			});
 		},
-		[writeContract, approveMarketplace, isApproved],
+		[listTokiemonWrite, isApproved, approveMarketplace],
 	);
 
 	return { listTokiemon, isPending, isError };
